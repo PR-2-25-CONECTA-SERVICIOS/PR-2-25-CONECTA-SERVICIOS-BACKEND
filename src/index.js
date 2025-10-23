@@ -2,7 +2,13 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
-
+import authRoutes from "./routes/auth.routes.js";
+import serviceRoutes from "./routes/services.routes.js";
+import localRoutes from "./routes/locales.routes.js";
+import providerRoutes from "./routes/providers.routes.js";
+import historyRoutes from "./routes/history.routes.js";
+import userRoutes from "./routes/users.routes.js";
+import adminRoutes from "./routes/admin.routes.js";
 dotenv.config();
 
 const app = express();
@@ -12,6 +18,13 @@ const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/paginas-am
 // Middlewares
 app.use(cors());
 app.use(express.json());
+app.use("/api/auth", authRoutes);
+app.use("/api/servicios", serviceRoutes);
+app.use("/api/locales", localRoutes);
+app.use("/api/proveedores", providerRoutes);
+app.use("/api/historial", historyRoutes);
+app.use("/api/usuarios", userRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Conexión a MongoDB
 mongoose
