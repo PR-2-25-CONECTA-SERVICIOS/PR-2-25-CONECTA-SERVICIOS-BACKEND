@@ -1,7 +1,9 @@
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 
-// REGISTRO DE USUARIO
+/* ===============================
+   🔹 REGISTRO DE USUARIO
+================================= */
 export const registerUser = async (req, res) => {
   try {
     const { nombre, correo, password, telefono } = req.body;
@@ -12,7 +14,7 @@ export const registerUser = async (req, res) => {
       return res.status(400).json({ mensaje: "El correo ya está registrado" });
     }
 
-    // Encriptar la contraseña
+    // Encriptar contraseña
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Crear nuevo usuario
@@ -34,7 +36,42 @@ export const registerUser = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Error en el registro:", error);
+    console.error("❌ Error en el registro:", error);
     res.status(500).json({ mensaje: "Error en el servidor" });
+  }
+};
+
+/* ===============================
+   🔹 LOGIN DE USUARIO
+================================= */
+export const loginUser = async (req, res) => {
+  try {
+    const { correo, password } = req.body;
+
+    // Buscar usuario
+    const user = await User.findOne({ correo });
+    if (!user) {
+      return res.status(404).json({ mensaje: "Usuario no encontrado" });
+    }
+
+    // Verificar contraseña
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword) {
+      return res.status(400).json({ mensaje: "Contraseña incorrecta" });
+    }
+
+    // (Más adelante aquí podrías generar un JWT si lo necesitas)
+    res.json({
+      mensaje: "Inicio de sesión exitoso",
+      usuario: {
+        id: user._id,
+        nombre: user.nombre,
+        correo: user.correo,
+        rol: user.rol,
+      },
+    });
+  } catch (error) {
+    console.error("❌ Error en el login:", error);
+    res.status(500).json({ mensaje: "Error al iniciar sesión" });
   }
 };
