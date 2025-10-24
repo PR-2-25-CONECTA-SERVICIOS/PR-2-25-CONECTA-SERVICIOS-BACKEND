@@ -55,7 +55,38 @@ export const getServiceById = async (req, res) => {
     res.status(500).json({ mensaje: "Error al obtener el servicio" });
   }
 };
+// Crear servicio
+export const createService = async (req, res) => {
+  try {
+    const { nombre, categoria, descripcion, precio } = req.body;
 
+    // según tu schema: nombre/categoria/descripcion/precio son requeridos
+    if (!nombre || !categoria || !descripcion || !precio) {
+      return res.status(400).json({ mensaje: "nombre, categoria, descripcion y precio son obligatorios" });
+    }
+
+    const nuevo = await Service.create(req.body);
+    res.status(201).json({ mensaje: "✅ Servicio creado correctamente", servicio: nuevo });
+  } catch (error) {
+    console.error("❌ Error en createService:", error);
+    res.status(500).json({ mensaje: "Error al crear el servicio" });
+  }
+};
+
+// Actualizar servicio (parcial)
+export const updateService = async (req, res) => {
+  try {
+    const actualizado = await Service.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true
+    });
+    if (!actualizado) return res.status(404).json({ mensaje: "Servicio no encontrado" });
+    res.json({ mensaje: "✅ Servicio actualizado", servicio: actualizado });
+  } catch (error) {
+    console.error("❌ Error en updateService:", error);
+    res.status(500).json({ mensaje: "Error al actualizar el servicio" });
+  }
+};
 // Crear solicitud de contratación
 export const createServiceRequest = async (req, res) => {
   try {

@@ -25,7 +25,7 @@ const localSchema = new mongoose.Schema(
     imagen: { type: String },
     verificado: { type: Boolean, default: false },
     destacado: { type: Boolean, default: false },
-    horas: { type: hoursSchema, required: true },
+    horas: { type: hoursSchema, required: false, default: {} },
     direccion: { type: String },
     creadoPor: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 

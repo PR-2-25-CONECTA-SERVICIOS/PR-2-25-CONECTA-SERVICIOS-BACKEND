@@ -6,26 +6,19 @@ import {
   createLocal,
   getLocalById,
   claimLocal,
+  updateLocal,
+  deleteLocal
 } from "../controllers/locales.controller.js";
 
 const router = express.Router();
 
-// 📍 Listar todos los locales
-router.get("/", getAllLocales);
-
-// 🔍 Buscar locales por nombre o categoría
-router.get("/search", searchLocales);
-
-// 🌟 Locales destacados
-router.get("/destacados", getFeaturedLocales);
-
-// 🏢 Crear nuevo local
-router.post("/", createLocal);
-
-// 🔎 Obtener detalles de un local específico
-router.get("/:id", getLocalById);
-
-// 🧾 Enviar reclamo de negocio
-router.post("/:id/reclamar", claimLocal);
+router.get("/", getAllLocales);              // GET todos
+router.get("/search", searchLocales);        // GET búsqueda
+router.get("/destacados", getFeaturedLocales); // GET destacados
+router.post("/", createLocal);               // POST crear
+router.get("/:id", getLocalById);            // GET detalle
+router.post("/:id/reclamar", claimLocal);    // POST reclamo
+router.patch("/:id", updateLocal);           // PATCH actualizar
+router.delete("/:id", deleteLocal);          // DELETE eliminar
 
 export default router;

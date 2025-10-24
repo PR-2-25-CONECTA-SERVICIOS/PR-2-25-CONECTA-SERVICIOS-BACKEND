@@ -111,3 +111,44 @@ export const createLocal = async (req, res) => {
     res.status(500).json({ mensaje: "Error al crear el local" });
   }
 };
+/* ============================================================
+   ✏️ Actualizar un local (PATCH)
+============================================================ */
+export const updateLocal = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const localActualizado = await Local.findByIdAndUpdate(id, req.body, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!localActualizado)
+      return res.status(404).json({ mensaje: "Local no encontrado" });
+
+    res.json({
+      mensaje: "✅ Local actualizado correctamente",
+      local: localActualizado,
+    });
+  } catch (error) {
+    console.error("❌ Error en updateLocal:", error);
+    res.status(500).json({ mensaje: "Error al actualizar el local" });
+  }
+};
+
+/* ============================================================
+   🗑️ Eliminar un local (DELETE)
+============================================================ */
+export const deleteLocal = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const eliminado = await Local.findByIdAndDelete(id);
+
+    if (!eliminado)
+      return res.status(404).json({ mensaje: "Local no encontrado" });
+
+    res.json({ mensaje: "✅ Local eliminado correctamente" });
+  } catch (error) {
+    console.error("❌ Error en deleteLocal:", error);
+    res.status(500).json({ mensaje: "Error al eliminar el local" });
+  }
+};

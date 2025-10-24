@@ -1,5 +1,6 @@
-import express from "express";
+import { Router } from "express";
 import {
+  // EXISTENTES EN TU CÓDIGO
   getAllServices,
   searchServices,
   getHighlightedServices,
@@ -8,28 +9,27 @@ import {
   deleteService,
   toggleAvailability,
   addReview,
+  // NUEVOS (ABAJITO TE DEJO LA IMPLEMENTACIÓN)
+  createService,
+  updateService
 } from "../controllers/services.controller.js";
 
-const router = express.Router();
+const router = Router();
 
-// Catálogo general
-router.get("/", getAllServices);
-router.get("/search", searchServices);
-router.get("/destacados", getHighlightedServices);
+// LISTAR / BUSCAR / DESTACADOS / DETALLE
+router.get("/", getAllServices);                    // GET  /api/servicios
+router.get("/buscar", searchServices);              // GET  /api/servicios/buscar?q=&categoria=
+router.get("/destacados", getHighlightedServices);  // GET  /api/servicios/destacados
+router.get("/:id", getServiceById);                 // GET  /api/servicios/:id
 
-// Detalle de servicio
-router.get("/:id", getServiceById);
+// CRUD
+router.post("/", createService);                    // POST   /api/servicios
+router.patch("/:id", updateService);                // PATCH  /api/servicios/:id
+router.delete("/:id", deleteService);               // DELETE /api/servicios/:id
 
-// Enviar solicitud
-router.post("/:id/solicitud", createServiceRequest);
-
-//ELIMINAR SERVICIO
-router.delete("/:id", deleteService);
-
-// Cambiar disponibilidad del servicio
-router.patch("/:id/toggle", toggleAvailability);
-
-// AGREGAR RESEÑA Y CALIFICAION
-router.post("/:id/review", addReview);
+// ACCIONES
+router.patch("/:id/toggle", toggleAvailability);    // PATCH  /api/servicios/:id/toggle
+router.post("/:id/reviews", addReview);             // POST   /api/servicios/:id/reviews
+router.post("/:id/solicitud", createServiceRequest);// POST   /api/servicios/:id/solicitud
 
 export default router;
