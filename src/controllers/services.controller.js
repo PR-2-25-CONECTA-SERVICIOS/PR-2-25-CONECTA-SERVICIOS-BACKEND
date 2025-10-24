@@ -82,3 +82,77 @@ export const createServiceRequest = async (req, res) => {
     res.status(500).json({ mensaje: "Error al crear la solicitud" });
   }
 };
+
+//Eliminar un servicio
+export const deleteService = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const servicioEliminado = await Service.findByIdAndDelete(id);
+
+    if (!servicioEliminado) {
+      return res.status(404).json({ mensaje: "Servicio no encontrado" });
+    }
+
+    res.json({ mensaje: "Servicio eliminado correctamente" });
+  } catch (error) {
+    console.error("❌ Error en deleteService:", error);
+    res.status(500).json({ mensaje: "Error al eliminar el servicio" });
+  }
+};
+// Cambiar disponibilidad del servicio
+export const toggleAvailability = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const servicio = await Service.findById(id);
+
+    if (!servicio) {
+      return res.status(404).json({ mensaje: "Servicio no encontrado" });
+    }
+
+    // Cambiar disponibilidad
+    servicio.disponible = !servicio.disponible;
+    await servicio.save();
+
+    res.json({
+      mensaje: `El servicio ahora está ${servicio.disponible ? "disponible" : "no disponible"}`,
+      servicio,
+    });
+  } catch (error) {
+    console.error("❌ Error en toggleAvailability:", error);
+    res.status(500).json({ mensaje: "Error al cambiar disponibilidad" });
+  }
+};
+
+// AGREGAR RESEÑA Y CALIFICAION
+
+export const addReview = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { usuario, comentario, calificacion } = req.body;
+
+    const servicio = await Service.findById(id);
+    if (!servicio) {
+      return res.status(404).json({ mensaje: "Servicio no encontrado" });
+    }
+
+    // Agregar nueva reseña
+    servicio.reseñas.push({ usuario, comentario, calificacion });
+
+    // Actualizar número de opiniones
+    servicio.opiniones = servicio.reseñas.length;
+
+    // Recalcular calificación promedio
+    const total = servicio.reseñas.reduce((acc, r) => acc + r.calificacion, 0);
+    servicio.calificacion = (total / servicio.reseñas.length).toFixed(1);
+
+    await servicio.save();
+
+    res.json({
+      mensaje: "Reseña agregada correctamente",
+      servicio,
+    });
+  } catch (error) {
+    console.error("❌ Error en addReview:", error);
+    res.status(500).json({ mensaje: "Error al agregar reseña" });
+  }
+};
