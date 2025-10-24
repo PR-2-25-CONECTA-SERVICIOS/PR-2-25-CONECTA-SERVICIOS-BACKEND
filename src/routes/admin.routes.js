@@ -15,9 +15,9 @@ router.get("/reclamos", getAllClaims);
 router.get("/reclamos/:localId/:claimId", getClaimById);
 
 // ✅ Aprobar reclamo
-router.put("/reclamos/:localId/:claimId/aprobar", approveClaim);
+router.patch("/reclamos/:localId/:claimId/aprobar", approveClaim);
 
 // ❌ Rechazar reclamo
-router.put("/reclamos/:localId/:claimId/rechazar", rejectClaim);
+router.patch("/reclamos/:localId/:claimId/rechazar", rejectClaim);
 
 export default router;

@@ -55,40 +55,69 @@ export const approveClaim = async (req, res) => {
     const local = await Local.findById(localId);
     if (!local) return res.status(404).json({ mensaje: "Local no encontrado" });
 
-    const reclamo = local.reclamos.id(claimId);
-    if (!reclamo) return res.status(404).json({ mensaje: "Reclamo no encontrado" });
+    const reclamo = local.reclamos.find(
+      (r) => r._id && r._id.toString() === claimId
+    );
+    if (!reclamo)
+      return res.status(404).json({ mensaje: "Reclamo no encontrado" });
 
     reclamo.estado = "aprobado";
-    await local.save();
 
-    res.json({ mensaje: "Reclamo aprobado correctamente", reclamo });
+    // 🔹 Guardar sin validar los demás campos del modelo
+    await local.save({ validateBeforeSave: false });
+
+    res.json({
+      mensaje: "Reclamo aprobado correctamente",
+      reclamo,
+    });
   } catch (error) {
-    console.error("❌ Error en approveClaim:", error);
+    console.error("❌ Error en approveClaim:", error.message);
     res.status(500).json({ mensaje: "Error al aprobar el reclamo" });
   }
 };
 
+
+
+
 /* ============================================================
-   ❌ Rechazar un reclamo
+   ❌ Rechazar un reclamo 
 ============================================================ */
 export const rejectClaim = async (req, res) => {
   try {
     const { localId, claimId } = req.params;
     const { motivo } = req.body;
 
+    // 🔍 Buscar el local
     const local = await Local.findById(localId);
-    if (!local) return res.status(404).json({ mensaje: "Local no encontrado" });
+    if (!local) {
+      console.log("⚠️ Local no encontrado con ID:", localId);
+      return res.status(404).json({ mensaje: "Local no encontrado" });
+    }
 
-    const reclamo = local.reclamos.id(claimId);
-    if (!reclamo) return res.status(404).json({ mensaje: "Reclamo no encontrado" });
+    // 🔍 Buscar reclamo dentro del array
+    const reclamo = local.reclamos.find(
+      (r) => r._id && r._id.toString() === claimId
+    );
 
+    if (!reclamo) {
+      console.log("⚠️ Reclamo no encontrado con ID:", claimId);
+      return res.status(404).json({ mensaje: "Reclamo no encontrado" });
+    }
+
+    // ❌ Cambiar estado y registrar motivo
     reclamo.estado = "rechazado";
     reclamo.motivoRechazo = motivo || "Sin motivo especificado";
-    await local.save();
 
-    res.json({ mensaje: "Reclamo rechazado correctamente", reclamo });
+    // 💾 Guardar sin validación de otros campos (como horas)
+    await local.save({ validateBeforeSave: false });
+
+    res.json({
+      mensaje: "Reclamo rechazado correctamente",
+      reclamo,
+    });
   } catch (error) {
-    console.error("❌ Error en rejectClaim:", error);
+    console.error("❌ Error en rejectClaim:", error.message);
     res.status(500).json({ mensaje: "Error al rechazar el reclamo" });
   }
 };
+
