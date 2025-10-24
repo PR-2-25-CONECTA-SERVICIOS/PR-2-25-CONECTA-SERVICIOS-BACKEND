@@ -2,8 +2,8 @@ import mongoose from "mongoose";
 
 const providerSchema = new mongoose.Schema({
   nombre: { type: String, required: true },
-  servicioPrincipal: { type: String, required: true },
-  categoria: { type: String, required: true },
+  servicioPrincipal: { type: String, required: false, default: "Servicio general" },
+  categoria: { type: String, required: false, default: "General" },
   telefono: { type: String },
   experiencia: { type: String },
   verificado: { type: Boolean, default: false },

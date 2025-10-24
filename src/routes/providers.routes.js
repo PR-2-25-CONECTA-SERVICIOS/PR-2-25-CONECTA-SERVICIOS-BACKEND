@@ -1,20 +1,30 @@
 import express from "express";
 import {
+  getAllProviders,
+  createProvider,
   getProviderProfile,
   updateProviderProfile,
   toggleProviderStatus,
   getProviderRequests,
   updateRequestStatus,
+  getProviderStats,
+  deleteProvider
 } from "../controllers/providers.controller.js";
 
 const router = express.Router();
 
-// Perfil y estado
+// CRUD base
+router.get("/", getAllProviders);
+router.post("/", createProvider);
 router.get("/:id", getProviderProfile);
 router.put("/:id", updateProviderProfile);
-router.patch("/:id/toggle", toggleProviderStatus);
+router.delete("/:id", deleteProvider);
 
-// Solicitudes de clientes
+// Estado y estadísticas
+router.patch("/:id/toggle", toggleProviderStatus);
+router.get("/:id/estadisticas", getProviderStats);
+
+// Solicitudes
 router.get("/:id/solicitudes", getProviderRequests);
 router.patch("/solicitudes/:requestId", updateRequestStatus);
 
