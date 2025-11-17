@@ -19,17 +19,25 @@ const localSchema = new mongoose.Schema(
   {
     nombre: { type: String, required: true },
     categoria: { type: String, required: true },
+
+    telefono: { type: String },
+    direccion: { type: String },
+
+    lat: { type: Number, required: true },     // ✅ añadido
+    lng: { type: Number, required: true },     // ✅ añadido
+
+    imagen: { type: String },
     calificacion: { type: Number, default: 0 },
     reseñas: { type: Number, default: 0 },
     distancia: { type: String },
-    imagen: { type: String },
+
     verificado: { type: Boolean, default: false },
     destacado: { type: Boolean, default: false },
+
     horas: { type: hoursSchema, required: false, default: {} },
-    direccion: { type: String },
+
     creadoPor: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 
-    // Reclamos enviados por supuestos propietarios
     reclamos: [
       {
         nombrePropietario: String,

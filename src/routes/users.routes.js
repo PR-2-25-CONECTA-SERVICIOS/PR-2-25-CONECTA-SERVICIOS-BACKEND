@@ -3,29 +3,31 @@ import {
   getUserProfile,
   updateUserProfile,
   addUserService,
+  updateUserService,
   deleteUserService,
   completeLocalRegistration,
   logoutUser,
+  getUserRequests,
 } from "../controllers/users.controller.js";
 
 const router = express.Router();
 
-/* ===============================
-   RUTAS DE USUARIOS
-================================= */
+// 📜 Historial del usuario
+router.get("/:id/solicitudes", getUserRequests);
 
-// 🔹 Perfil del usuario
+// 📘 Perfil
 router.get("/:id", getUserProfile);
 router.put("/:id", updateUserProfile);
 
-// 🔹 Servicios asociados al usuario
+// ⚙️ Servicios del usuario
 router.post("/:id/servicios", addUserService);
+router.put("/:id/servicios/:serviceId", updateUserService);
 router.delete("/:id/servicios/:serviceId", deleteUserService);
 
-// 🔹 Completar registro del local
+// 🏪 Locales
 router.put("/locales/:localId/completar", completeLocalRegistration);
 
-// 🔹 Cerrar sesión
+// 🚪 Logout
 router.post("/logout", logoutUser);
 
 export default router;

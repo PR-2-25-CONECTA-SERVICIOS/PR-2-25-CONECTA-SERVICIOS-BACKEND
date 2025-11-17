@@ -1,6 +1,7 @@
 import User from "../models/user.model.js";
 import Service from "../models/service.model.js";
 import Local from "../models/local.model.js";
+import Request from "../models/request.model.js";
 
 /* ===============================
    📘 PERFIL DE USUARIO
@@ -25,7 +26,7 @@ export const getUserProfile = async (req, res) => {
   }
 };
 
-// Editar datos del perfil (nombre, teléfono, avatar, etc.)
+// Actualizar perfil
 export const updateUserProfile = async (req, res) => {
   try {
     const { id } = req.params;
@@ -50,7 +51,7 @@ export const updateUserProfile = async (req, res) => {
    ⚙️ SERVICIOS DEL USUARIO
 ================================= */
 
-// Agregar un nuevo servicio al usuario
+// Crear servicio
 export const addUserService = async (req, res) => {
   try {
     const { id } = req.params; // id del usuario
@@ -73,7 +74,33 @@ export const addUserService = async (req, res) => {
   }
 };
 
-// Eliminar un servicio del usuario
+// Actualizar servicio
+export const updateUserService = async (req, res) => {
+  try {
+    const { id, serviceId } = req.params;
+    const data = req.body;
+
+    const servicioActualizado = await Service.findByIdAndUpdate(
+      serviceId,
+      data,
+      { new: true }
+    );
+
+    if (!servicioActualizado) {
+      return res.status(404).json({ mensaje: "Servicio no encontrado" });
+    }
+
+    res.json({
+      mensaje: "Servicio actualizado correctamente",
+      servicio: servicioActualizado,
+    });
+  } catch (error) {
+    console.error("❌ Error en updateUserService:", error);
+    res.status(500).json({ mensaje: "Error al actualizar servicio" });
+  }
+};
+
+// Eliminar servicio
 export const deleteUserService = async (req, res) => {
   try {
     const { id, serviceId } = req.params;
@@ -92,7 +119,6 @@ export const deleteUserService = async (req, res) => {
    🏪 LOCALES DEL USUARIO
 ================================= */
 
-// Completar información de un local (fotos, tags, amenities)
 export const completeLocalRegistration = async (req, res) => {
   try {
     const { localId } = req.params;
@@ -118,11 +144,30 @@ export const completeLocalRegistration = async (req, res) => {
 };
 
 /* ===============================
+   📜 HISTORIAL DE SOLICITUDES
+================================= */
+
+// 🔥 NUEVO: solicitudes hechas por el usuario
+export const getUserRequests = async (req, res) => {
+  try {
+    const { id } = req.params; // ID del usuario
+
+    const solicitudes = await Request.find({ cliente: id })
+      .populate("servicio", "nombre categoria precio imagen descripcion")
+      .populate("proveedor", "nombre avatar categoria");
+
+    res.json(solicitudes);
+  } catch (error) {
+    console.error("❌ Error en getUserRequests:", error);
+    res.status(500).json({ mensaje: "Error al obtener solicitudes del usuario" });
+  }
+};
+
+/* ===============================
    🚪 CERRAR SESIÓN
 ================================= */
 export const logoutUser = async (req, res) => {
   try {
-    // Si usas JWT, aquí eliminarías el token del lado del cliente
     res.json({ mensaje: "Sesión cerrada exitosamente" });
   } catch (error) {
     console.error("❌ Error en logoutUser:", error);

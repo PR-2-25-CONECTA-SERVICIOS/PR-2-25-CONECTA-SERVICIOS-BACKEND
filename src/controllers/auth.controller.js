@@ -65,6 +65,8 @@ export const loginUser = async (req, res) => {
       mensaje: "Inicio de sesión exitoso",
       usuario: {
         id: user._id,
+                _id: user._id,   // 👈 ESTA LÍNEA ARREGLA TODO
+
         nombre: user.nombre,
         correo: user.correo,
         rol: user.rol,

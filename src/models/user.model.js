@@ -5,25 +5,22 @@ const userSchema = new mongoose.Schema({
   correo: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   telefono: { type: String },
+
   rol: {
     type: String,
     enum: ["usuario", "negocio", "admin"],
     default: "usuario",
   },
 
-  // 🔹 Datos del perfil:
-  avatar: { type: String }, // foto del usuario o logo del negocio
+  // Datos del perfil
+  avatar: { type: String },
   verificado: { type: Boolean, default: false },
   calificacion: { type: Number, default: 0 },
   reseñas: { type: Number, default: 0 },
 
-  // 🔹 Relaciones con otros modelos:
-  servicios: [
-    { type: mongoose.Schema.Types.ObjectId, ref: "Service" } // servicios que ofrece
-  ],
-  locales: [
-    { type: mongoose.Schema.Types.ObjectId, ref: "Local" } // locales que registró
-  ],
+  // Relaciones
+  servicios: [{ type: mongoose.Schema.Types.ObjectId, ref: "Service" }],
+  locales: [{ type: mongoose.Schema.Types.ObjectId, ref: "Local" }],
 
 }, { timestamps: true });
 

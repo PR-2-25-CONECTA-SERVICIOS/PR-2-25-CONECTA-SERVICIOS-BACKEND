@@ -55,6 +55,26 @@ export const getServiceById = async (req, res) => {
     res.status(500).json({ mensaje: "Error al obtener el servicio" });
   }
 };
+// ============================================================
+// 📋 Obtener solicitudes de un servicio
+// GET /api/servicios/:id/solicitudes
+// ============================================================
+export const getServiceRequests = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const solicitudes = await Request.find({ servicio: id })
+      .populate("cliente", "nombre correo telefono")
+      .sort({ createdAt: -1 });
+
+    res.json(solicitudes);
+  } catch (error) {
+    console.error("❌ Error en getServiceRequests:", error);
+    res.status(500).json({ mensaje: "Error al obtener solicitudes" });
+  }
+};
+
+
 // Crear servicio
 export const createService = async (req, res) => {
   try {
@@ -87,6 +107,88 @@ export const updateService = async (req, res) => {
     res.status(500).json({ mensaje: "Error al actualizar el servicio" });
   }
 };
+// ============================================================
+// 🔄 Actualizar estado de una solicitud
+// PATCH /api/servicios/:id/solicitudes/:solicitudId
+// body: { estado: "pendiente" | "aceptado" | "finalizado" | "cancelado" }
+// ============================================================
+export const updateRequestStatus = async (req, res) => {
+  try {
+    const { solicitudId } = req.params;
+    const { estado } = req.body;
+
+    const updated = await Request.findByIdAndUpdate(
+      solicitudId,
+      { estado },
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ mensaje: "Solicitud no encontrada" });
+    }
+
+    res.json({
+      mensaje: "Estado de solicitud actualizado correctamente",
+      solicitud: updated,
+    });
+  } catch (error) {
+    console.error("❌ Error en updateRequestStatus:", error);
+    res
+      .status(500)
+      .json({ mensaje: "Error al actualizar estado de la solicitud" });
+  }
+};
+
+// ============================================================
+// 📅 Asignar cita (fecha y hora) a una solicitud
+// PATCH /api/servicios/solicitudes/:solicitudId/appointment
+// body: { fechaCita: "YYYY-MM-DD", horaCita: "HH:mm" }
+// ============================================================
+export const assignAppointment = async (req, res) => {
+  try {
+    const { solicitudId } = req.params;
+    const { fechaCita, horaCita } = req.body;
+
+    const updated = await Request.findByIdAndUpdate(
+      solicitudId,
+      { fechaCita, horaCita },
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ mensaje: "Solicitud no encontrada" });
+    }
+
+    res.json({
+      mensaje: "Cita asignada correctamente",
+      solicitud: updated,
+    });
+  } catch (error) {
+    console.error("❌ Error en assignAppointment:", error);
+    res.status(500).json({ mensaje: "Error al asignar la cita" });
+  }
+};
+
+// ============================================================
+// ⭐ (Stub) Calificar una solicitud / servicio
+// POST /api/servicios/solicitudes/:solicitudId/review
+// De momento solo responde OK para que no rompa nada.
+// Más adelante puedes conectar esto con addReview si quieres.
+// ============================================================
+export const reviewServiceRequest = async (req, res) => {
+  try {
+    res.json({
+      mensaje:
+        "Endpoint reviewServiceRequest recibido. (Lógica detallada pendiente de implementar)",
+    });
+  } catch (error) {
+    console.error("❌ Error en reviewServiceRequest:", error);
+    res
+      .status(500)
+      .json({ mensaje: "Error al procesar la reseña de la solicitud" });
+  }
+};
+
 // Crear solicitud de contratación
 export const createServiceRequest = async (req, res) => {
   try {
