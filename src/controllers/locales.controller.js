@@ -13,6 +13,60 @@ export const getAllLocales = async (req, res) => {
     res.status(500).json({ mensaje: "Error al obtener los locales" });
   }
 };
+export const getAllClaims = async (req, res) => {
+  try {
+    const locales = await Local.find({}, "nombre categoria imagen reclamos");
+
+    const reclamos = [];
+
+    locales.forEach((loc) => {
+      loc.reclamos.forEach((rec) => {
+        reclamos.push({
+          claimId: rec._id,
+          localId: loc._id,
+          businessName: loc.nombre,
+          category: loc.categoria,
+          businessImage: loc.imagen,
+
+          nombrePropietario: rec.nombrePropietario,
+          correo: rec.correo,
+          telefono: rec.telefono,
+          mensaje: rec.mensaje,
+          documentos: rec.documentos,
+
+          estado: rec.estado,
+          fecha: rec.fecha,
+        });
+      });
+    });
+
+    res.json(reclamos);
+  } catch (err) {
+    console.log("❌ Error en getAllClaims:", err);
+    res.status(500).json({ mensaje: "Error al obtener reclamos" });
+  }
+};
+export const updateClaimStatus = async (req, res) => {
+  try {
+    const { localId, claimId } = req.params;
+    const { estado } = req.body; // "aprobado" o "rechazado"
+
+    const local = await Local.findById(localId);
+    if (!local) return res.status(404).json({ mensaje: "Local no encontrado" });
+
+    const reclamo = local.reclamos.id(claimId);
+    if (!reclamo) return res.status(404).json({ mensaje: "Reclamo no encontrado" });
+
+    reclamo.estado = estado;
+
+    await local.save();
+
+    res.json({ mensaje: "Estado actualizado", reclamo });
+  } catch (err) {
+    console.log("❌ Error en updateClaimStatus:", err);
+    res.status(500).json({ mensaje: "Error al actualizar el reclamo" });
+  }
+};
 
 /* ============================================================
    🔍 Buscar locales (por nombre o categoría)
