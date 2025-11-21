@@ -20,23 +20,28 @@ const localSchema = new mongoose.Schema(
     nombre: { type: String, required: true },
     categoria: { type: String, required: true },
 
-    telefono: { type: String },
-    direccion: { type: String },
+    telefono: String,
+    direccion: String,
 
-    lat: { type: Number, required: true },     // ✅ añadido
-    lng: { type: Number, required: true },     // ✅ añadido
+    lat: { type: Number, required: true },
+    lng: { type: Number, required: true },
 
-    imagen: { type: String },
+    imagen: String,
     calificacion: { type: Number, default: 0 },
     reseñas: { type: Number, default: 0 },
-    distancia: { type: String },
 
     verificado: { type: Boolean, default: false },
     destacado: { type: Boolean, default: false },
 
-    horas: { type: hoursSchema, required: false, default: {} },
+    horas: { type: hoursSchema, default: {} },
 
     creadoPor: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+
+    // 🔥 estos 4 campos faltaban
+    url: String,
+    fotos: { type: [String], default: [] },
+    servicios: { type: [String], default: [] },
+    tagsEspeciales: { type: [String], default: [] },
 
     reclamos: [
       {
@@ -52,5 +57,6 @@ const localSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
 
 export default mongoose.model("Local", localSchema);
