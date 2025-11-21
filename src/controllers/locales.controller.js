@@ -49,19 +49,31 @@ export const getAllClaims = async (req, res) => {
 export const updateClaimStatus = async (req, res) => {
   try {
     const { localId, claimId } = req.params;
-    const { estado } = req.body; // "aprobado" o "rechazado"
+    const { estado, verificado } = req.body;
+    // ahora recibimos "verificado"
 
     const local = await Local.findById(localId);
     if (!local) return res.status(404).json({ mensaje: "Local no encontrado" });
 
     const reclamo = local.reclamos.id(claimId);
-    if (!reclamo) return res.status(404).json({ mensaje: "Reclamo no encontrado" });
+    if (!reclamo)
+      return res.status(404).json({ mensaje: "Reclamo no encontrado" });
 
+    // Actualizar reclamo
     reclamo.estado = estado;
+
+    // 🔥 ACTUALIZAR también el atributo verificado del local
+    if (typeof verificado === "boolean") {
+      local.verificado = verificado;
+    }
 
     await local.save();
 
-    res.json({ mensaje: "Estado actualizado", reclamo });
+    res.json({
+      mensaje: "Estado y verificación actualizados correctamente",
+      reclamo,
+      verificado: local.verificado,
+    });
   } catch (err) {
     console.log("❌ Error en updateClaimStatus:", err);
     res.status(500).json({ mensaje: "Error al actualizar el reclamo" });
@@ -101,7 +113,9 @@ export const getFeaturedLocales = async (req, res) => {
     res.json(destacados);
   } catch (error) {
     console.error("❌ Error en getFeaturedLocales:", error);
-    res.status(500).json({ mensaje: "Error al obtener los locales destacados" });
+    res
+      .status(500)
+      .json({ mensaje: "Error al obtener los locales destacados" });
   }
 };
 
@@ -111,7 +125,10 @@ export const getFeaturedLocales = async (req, res) => {
 export const getLocalById = async (req, res) => {
   try {
     const { id } = req.params;
-    const local = await Local.findById(id).populate("creadoPor", "nombre correo");
+    const local = await Local.findById(id).populate(
+      "creadoPor",
+      "nombre correo"
+    );
     if (!local) return res.status(404).json({ mensaje: "Local no encontrado" });
     res.json(local);
   } catch (error) {
@@ -126,7 +143,8 @@ export const getLocalById = async (req, res) => {
 export const claimLocal = async (req, res) => {
   try {
     const { id } = req.params;
-    const { nombrePropietario, correo, telefono, mensaje, documentos } = req.body;
+    const { nombrePropietario, correo, telefono, mensaje, documentos } =
+      req.body;
 
     const solicitud = {
       nombrePropietario,
@@ -147,7 +165,9 @@ export const claimLocal = async (req, res) => {
     });
   } catch (error) {
     console.error("❌ Error en claimLocal:", error);
-    res.status(500).json({ mensaje: "Error al enviar la solicitud de reclamo" });
+    res
+      .status(500)
+      .json({ mensaje: "Error al enviar la solicitud de reclamo" });
   }
 };
 const submitClaim = async () => {
@@ -181,7 +201,6 @@ const submitClaim = async () => {
   }
 };
 
-
 /* ============================================================
    🏢 Crear un nuevo local
 ============================================================ */
@@ -196,7 +215,7 @@ export const createLocal = async (req, res) => {
       lat,
       lng,
       imagen,
-      userId,   // 👈 VIENE DEL FRONT
+      userId, // 👈 VIENE DEL FRONT
     } = req.body;
 
     if (!userId) {
