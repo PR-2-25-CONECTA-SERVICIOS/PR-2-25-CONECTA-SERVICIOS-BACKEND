@@ -192,29 +192,31 @@ export const reviewServiceRequest = async (req, res) => {
 // Crear solicitud de contratación
 export const createServiceRequest = async (req, res) => {
   try {
-    const { id } = req.params; // ID del servicio
+    const { id } = req.params;
     const { cliente, mensaje } = req.body;
 
     const servicio = await Service.findById(id);
     if (!servicio) return res.status(404).json({ mensaje: "Servicio no encontrado" });
 
-    const nuevaSolicitud = new Request({
+    const nuevaSolicitud = await Request.create({
       servicio: id,
       cliente,
-      mensaje,
+      proveedor: servicio.propietarioId, // 🔥 AQUÍ SE ASIGNA
+      descripcion: mensaje || "",        // 🔥 Guardar mensaje
+      estado: "pendiente"
     });
-
-    await nuevaSolicitud.save();
 
     res.status(201).json({
       mensaje: "Solicitud enviada correctamente",
       solicitud: nuevaSolicitud,
     });
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ mensaje: "Error al crear la solicitud" });
   }
 };
+
 
 //Eliminar un servicio
 export const deleteService = async (req, res) => {

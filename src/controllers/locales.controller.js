@@ -79,6 +79,35 @@ export const updateClaimStatus = async (req, res) => {
     res.status(500).json({ mensaje: "Error al actualizar el reclamo" });
   }
 };
+export const completarLocal = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { url, photos, amenities, tags } = req.body;
+
+    const local = await Local.findById(id);
+    if (!local) return res.status(404).json({ mensaje: "Local no encontrado" });
+
+    if (url) local.url = url;
+    if (photos) local.fotos = photos;
+    if (amenities) local.servicios = amenities;
+    if (tags) local.tagsEspeciales = tags;
+
+    // Si el reclamo está aprobado → verificar el local
+    const aprobado = local.reclamos.some((r) => r.estado === "aprobado");
+    if (aprobado) local.verificado = true;
+
+    await local.save();
+
+    res.json({
+      mensaje: "Local completado exitosamente",
+      local,
+    });
+
+  } catch (error) {
+    console.error("❌ Error en completarLocal:", error);
+    res.status(500).json({ mensaje: "Error al completar el registro del local" });
+  }
+};
 
 /* ============================================================
    🔍 Buscar locales (por nombre o categoría)

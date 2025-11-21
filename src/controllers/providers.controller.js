@@ -107,7 +107,8 @@ export const toggleProviderStatus = async (req, res) => {
 ============================================================ */
 export const getProviderRequests = async (req, res) => {
   try {
-    const requests = await Request.find({ servicioProveedor: req.params.id })
+    const requests = await Request.find({ proveedor: req.params.id })
+
       .populate("cliente", "nombre correo")
       .populate("servicio", "nombre categoria precio");
     res.json(requests);

@@ -150,16 +150,25 @@ export const completeLocalRegistration = async (req, res) => {
 // 🔥 NUEVO: solicitudes hechas por el usuario
 export const getUserRequests = async (req, res) => {
   try {
-    const { id } = req.params; // ID del usuario
+    const { id } = req.params;
 
     const solicitudes = await Request.find({ cliente: id })
-      .populate("servicio", "nombre categoria precio imagen descripcion")
-      .populate("proveedor", "nombre avatar categoria");
+      .populate("servicio") // Populate completo
+      .sort({ createdAt: -1 });
 
-    res.json(solicitudes);
+    const result = solicitudes.map(s => ({
+      _id: s._id,
+      servicio: s.servicio,
+      estado: s.estado,
+      fecha: s.fechaSolicitud?.toISOString().split("T")[0],
+      hora: s.fechaSolicitud?.toISOString().split("T")[1].slice(0,5),
+      calificacion: s.calificacion ?? null
+    }));
+
+    res.json(result);
   } catch (error) {
-    console.error("❌ Error en getUserRequests:", error);
-    res.status(500).json({ mensaje: "Error al obtener solicitudes del usuario" });
+    console.log("❌ Error en getUserRequests:", error);
+    res.status(500).json({ mensaje: "Error obteniendo historial" });
   }
 };
 
