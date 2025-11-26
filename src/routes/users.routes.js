@@ -9,6 +9,7 @@ import {
   logoutUser,
   getUserRequests,
 } from "../controllers/users.controller.js";
+import { reviewServiceRequest } from "../controllers/services.controller.js";
 
 const router = express.Router();
 
@@ -18,6 +19,7 @@ router.get("/:id/solicitudes", getUserRequests);
 // 📘 Perfil
 router.get("/:id", getUserProfile);
 router.put("/:id", updateUserProfile);
+router.patch("/:userId/solicitudes/:solicitudId/calificar", reviewServiceRequest);
 
 // ⚙️ Servicios del usuario
 router.post("/:id/servicios", addUserService);

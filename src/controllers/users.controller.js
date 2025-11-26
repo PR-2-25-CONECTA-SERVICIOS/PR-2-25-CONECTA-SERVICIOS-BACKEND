@@ -57,8 +57,12 @@ export const addUserService = async (req, res) => {
     const { id } = req.params; // id del usuario
     const data = req.body;
 
-    const nuevoServicio = new Service(data);
-    await nuevoServicio.save();
+const nuevoServicio = new Service({
+  ...data,
+  propietarioId: id, // ⭐ DUEÑO REAL DEL SERVICIO
+});
+await nuevoServicio.save();
+
 
     await User.findByIdAndUpdate(id, {
       $push: { servicios: nuevoServicio._id },
@@ -80,25 +84,39 @@ export const updateUserService = async (req, res) => {
     const { id, serviceId } = req.params;
     const data = req.body;
 
-    const servicioActualizado = await Service.findByIdAndUpdate(
-      serviceId,
-      data,
-      { new: true }
-    );
+    // 1️⃣ Buscar el servicio
+    const servicio = await Service.findById(serviceId);
 
-    if (!servicioActualizado) {
+    if (!servicio) {
       return res.status(404).json({ mensaje: "Servicio no encontrado" });
     }
+
+    // 2️⃣ Verificar propiedad
+    if (servicio.propietarioId?.toString() !== id) {
+      return res.status(403).json({ mensaje: "No puedes editar este servicio" });
+    }
+
+    // 3️⃣ Actualizar datos
+    const servicioActualizado = await Service.findByIdAndUpdate(
+      serviceId,
+      {
+        ...data,
+        propietarioId: id, // ⭐ seguridad extra por si se omitió
+      },
+      { new: true }
+    );
 
     res.json({
       mensaje: "Servicio actualizado correctamente",
       servicio: servicioActualizado,
     });
+
   } catch (error) {
     console.error("❌ Error en updateUserService:", error);
     res.status(500).json({ mensaje: "Error al actualizar servicio" });
   }
 };
+
 
 // Eliminar servicio
 export const deleteUserService = async (req, res) => {

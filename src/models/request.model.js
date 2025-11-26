@@ -13,7 +13,7 @@ const requestSchema = new mongoose.Schema({
     default: "pendiente",
   },
   calificacion: { type: Number },
-  comentario: { type: String },
+  reseña: { type: String },
   fechaSolicitud: { type: Date, default: Date.now },
   fechaCita: { type: String },
   horaCita: { type: String },

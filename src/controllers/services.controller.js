@@ -47,14 +47,23 @@ export const getHighlightedServices = async (req, res) => {
 export const getServiceById = async (req, res) => {
   try {
     const { id } = req.params;
-    const servicio = await Service.findById(id);
-    if (!servicio) return res.status(404).json({ mensaje: "Servicio no encontrado" });
+
+    const servicio = await Service.findById(id)
+      .populate("reseñas.usuario", "nombre avatar correo"); 
+      // 👉 Solo populamos lo necesario
+
+    if (!servicio) {
+      return res.status(404).json({ mensaje: "Servicio no encontrado" });
+    }
+
     res.json(servicio);
+
   } catch (error) {
-    console.error(error);
+    console.error("❌ Error en getServiceById:", error);
     res.status(500).json({ mensaje: "Error al obtener el servicio" });
   }
 };
+
 // ============================================================
 // 📋 Obtener solicitudes de un servicio
 // GET /api/servicios/:id/solicitudes
@@ -177,15 +186,52 @@ export const assignAppointment = async (req, res) => {
 // ============================================================
 export const reviewServiceRequest = async (req, res) => {
   try {
-    res.json({
-      mensaje:
-        "Endpoint reviewServiceRequest recibido. (Lógica detallada pendiente de implementar)",
+    const { solicitudId } = req.params;
+    const { calificacion, reseña } = req.body;
+
+    // 1️⃣ Buscar la solicitud
+    const solicitud = await Request.findById(solicitudId);
+    if (!solicitud) {
+      return res.status(404).json({ mensaje: "Solicitud no encontrada" });
+    }
+
+    // 2️⃣ Guardar calificación y reseña en la solicitud
+    solicitud.calificacion = calificacion;
+    solicitud.reseña = reseña;
+    await solicitud.save();
+
+    // 3️⃣ Buscar el servicio relacionado
+    const servicio = await Service.findById(solicitud.servicio);
+    if (!servicio) {
+      return res.status(404).json({ mensaje: "Servicio no encontrado" });
+    }
+
+    // 4️⃣ Agregar reseña en el servicio
+    servicio.reseñas.push({
+  usuario: solicitud.cliente,   // 👈 SIN .toString()
+      comentario: reseña,
+      calificacion,
+      fecha: new Date(),
     });
+
+    // 5️⃣ Recalcular calificación promedio
+    const total = servicio.reseñas.reduce((acc, r) => acc + r.calificacion, 0);
+    servicio.calificacion = Number((total / servicio.reseñas.length).toFixed(1));
+
+    // 6️⃣ Actualizar número de opiniones
+    servicio.opiniones = servicio.reseñas.length;
+
+    await servicio.save();
+
+    res.json({
+      mensaje: "Calificación guardada correctamente",
+      solicitud,
+      servicio,
+    });
+
   } catch (error) {
     console.error("❌ Error en reviewServiceRequest:", error);
-    res
-      .status(500)
-      .json({ mensaje: "Error al procesar la reseña de la solicitud" });
+    res.status(500).json({ mensaje: "Error al calificar la solicitud" });
   }
 };
 

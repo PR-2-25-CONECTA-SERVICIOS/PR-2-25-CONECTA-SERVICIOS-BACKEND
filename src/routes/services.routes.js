@@ -1,6 +1,5 @@
 import { Router } from "express";
 import {
-  // EXISTENTES EN TU CÓDIGO
   getAllServices,
   searchServices,
   getHighlightedServices,
@@ -9,11 +8,8 @@ import {
   deleteService,
   toggleAvailability,
   addReview,
-  // NUEVOS (ABAJITO TE DEJO LA IMPLEMENTACIÓN)
   createService,
-  updateService
-} from "../controllers/services.controller.js";
-import {
+  updateService,
   getServiceRequests,
   updateRequestStatus,
   assignAppointment,
@@ -22,30 +18,46 @@ import {
 
 const router = Router();
 
-// LISTAR / BUSCAR / DESTACADOS / DETALLE
-router.get("/", getAllServices);                    // GET  /api/servicios
-router.get("/buscar", searchServices);              // GET  /api/servicios/buscar?q=&categoria=
-router.get("/destacados", getHighlightedServices);  // GET  /api/servicios/destacados
-router.get("/:id", getServiceById);                 // GET  /api/servicios/:id
+/* ---------------------------------------------
+   ⚠️ ORDEN CORRECTO (Rutas específicas primero)
+-----------------------------------------------*/
 
-router.get("/:id/solicitudes", getServiceRequests);
+// ⭐ Calificar una solicitud
+router.post("/solicitudes/:solicitudId/review", reviewServiceRequest);
 
-// Cambiar estado
-router.patch("/:id/solicitudes/:solicitudId", updateRequestStatus);
-
-// Asignar cita (fecha y hora)
+// ⭐ Asignar cita
 router.patch("/solicitudes/:solicitudId/appointment", assignAppointment);
 
-// Calificar servicio tras finalizar
-router.post("/solicitudes/:solicitudId/review", reviewServiceRequest);
-// CRUD
-router.post("/", createService);                    // POST   /api/servicios
-router.patch("/:id", updateService);                // PATCH  /api/servicios/:id
-router.delete("/:id", deleteService);               // DELETE /api/servicios/:id
+// ⭐ Solicitudes por servicio
+router.get("/:id/solicitudes", getServiceRequests);
 
-// ACCIONES
-router.patch("/:id/toggle", toggleAvailability);    // PATCH  /api/servicios/:id/toggle
-router.post("/:id/reviews", addReview);             // POST   /api/servicios/:id/reviews
-  router.post("/:id/solicitud", createServiceRequest);// POST   /api/servicios/:id/solicitud
+// ⭐ Cambiar estado
+router.patch("/:id/solicitudes/:solicitudId", updateRequestStatus);
+
+// ⭐ Crear solicitud
+router.post("/:id/solicitud", createServiceRequest);
+
+// ⭐ Agregar reseña manual al servicio
+router.post("/:id/reviews", addReview);
+
+// ------------------------------
+// LISTAR / BUSCAR / DESTACADOS
+// ------------------------------
+router.get("/", getAllServices);
+router.get("/buscar", searchServices);
+router.get("/destacados", getHighlightedServices);
+
+// -------------------------------------
+// ⚠️ ESTA VA AL FINAL SIEMPRE
+// -------------------------------------
+router.get("/:id", getServiceById);
+
+// CRUD
+router.post("/", createService);
+router.patch("/:id", updateService);
+router.delete("/:id", deleteService);
+
+// Toggle disponibilidad
+router.patch("/:id/toggle", toggleAvailability);
 
 export default router;
