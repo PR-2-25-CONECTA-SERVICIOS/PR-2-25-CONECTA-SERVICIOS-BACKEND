@@ -1,5 +1,12 @@
 import Local from "../models/local.model.js";
 import User from "../models/user.model.js";
+import cloudinary from "cloudinary";
+
+cloudinary.v2.config({
+  cloud_name: "deqxfxbaa",
+  api_key: "TU_API_KEY",
+  api_secret: "TU_SECRET",
+});
 
 /* ============================================================
    📍 Obtener todos los locales
@@ -102,10 +109,11 @@ export const completarLocal = async (req, res) => {
       mensaje: "Local completado exitosamente",
       local,
     });
-
   } catch (error) {
     console.error("❌ Error en completarLocal:", error);
-    res.status(500).json({ mensaje: "Error al completar el registro del local" });
+    res
+      .status(500)
+      .json({ mensaje: "Error al completar el registro del local" });
   }
 };
 
@@ -175,12 +183,15 @@ export const claimLocal = async (req, res) => {
     const { nombrePropietario, correo, telefono, mensaje, documentos } =
       req.body;
 
+    // documentos ya deben ser URLs del FRONT
+    const uploadedDocs = Array.isArray(documentos) ? documentos : [];
+
     const solicitud = {
       nombrePropietario,
       correo,
       telefono,
       mensaje,
-      documentos: documentos || [],
+      documentos: uploadedDocs,
       estado: "pendiente",
       fecha: new Date(),
     };
@@ -188,8 +199,7 @@ export const claimLocal = async (req, res) => {
     await Local.findByIdAndUpdate(id, { $push: { reclamos: solicitud } });
 
     res.status(201).json({
-      mensaje:
-        "Solicitud de reclamo enviada correctamente. Será revisada por un administrador.",
+      mensaje: "Solicitud enviada correctamente",
       solicitud,
     });
   } catch (error) {
@@ -199,6 +209,7 @@ export const claimLocal = async (req, res) => {
       .json({ mensaje: "Error al enviar la solicitud de reclamo" });
   }
 };
+
 const submitClaim = async () => {
   try {
     const res = await fetch(`${API_URL}/${id}/reclamar`, {
