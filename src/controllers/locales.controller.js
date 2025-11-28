@@ -36,6 +36,8 @@ export const getAllClaims = async (req, res) => {
 
           estado: rec.estado,
           fecha: rec.fecha,
+          userId: rec.userId // si no existe, pásalo como rec.userId o el campo que corresponda
+
         });
       });
     });
@@ -49,8 +51,8 @@ export const getAllClaims = async (req, res) => {
 export const updateClaimStatus = async (req, res) => {
   try {
     const { localId, claimId } = req.params;
-    const { estado, verificado } = req.body;
-    // ahora recibimos "verificado"
+    const { estado, verificado, userId } = req.body;  
+    // 👆 userId = ID del nuevo dueño (el que reclama)
 
     const local = await Local.findById(localId);
     if (!local) return res.status(404).json({ mensaje: "Local no encontrado" });
@@ -59,10 +61,31 @@ export const updateClaimStatus = async (req, res) => {
     if (!reclamo)
       return res.status(404).json({ mensaje: "Reclamo no encontrado" });
 
-    // Actualizar reclamo
+    // Actualizar estado del reclamo
     reclamo.estado = estado;
 
-    // 🔥 ACTUALIZAR también el atributo verificado del local
+    // Si aprobó → transferir propiedad
+    if (estado === "aprobado" && userId) {
+      const oldOwnerId = local.creadoPor?.toString();
+      const newOwnerId = userId;
+
+      // 1️⃣ Quitar local del dueño original
+      if (oldOwnerId) {
+        await User.findByIdAndUpdate(oldOwnerId, {
+          $pull: { locales: localId }
+        });
+      }
+
+      // 2️⃣ Agregar local al nuevo dueño
+      await User.findByIdAndUpdate(newOwnerId, {
+        $addToSet: { locales: localId }
+      });
+
+      // 3️⃣ Cambiar el dueño en el local
+      local.creadoPor = newOwnerId;
+    }
+
+    // actualizar verificado
     if (typeof verificado === "boolean") {
       local.verificado = verificado;
     }
@@ -70,13 +93,14 @@ export const updateClaimStatus = async (req, res) => {
     await local.save();
 
     res.json({
-      mensaje: "Estado y verificación actualizados correctamente",
+      mensaje: "Reclamo procesado correctamente",
       reclamo,
-      verificado: local.verificado,
+      local,
     });
+
   } catch (err) {
     console.log("❌ Error en updateClaimStatus:", err);
-    res.status(500).json({ mensaje: "Error al actualizar el reclamo" });
+    res.status(500).json({ mensaje: "Error al actualizar reclamo" });
   }
 };
 export const completarLocal = async (req, res) => {
@@ -172,10 +196,17 @@ export const getLocalById = async (req, res) => {
 export const claimLocal = async (req, res) => {
   try {
     const { id } = req.params;
-    const { nombrePropietario, correo, telefono, mensaje, documentos } =
-      req.body;
+    const {
+      userId,               // 👈 VIENE DEL FRONT
+      nombrePropietario,
+      correo,
+      telefono,
+      mensaje,
+      documentos,
+    } = req.body;
 
     const solicitud = {
+      userId,               // 👈 GUARDAMOS QUIÉN RECLAMA
       nombrePropietario,
       correo,
       telefono,
@@ -199,6 +230,7 @@ export const claimLocal = async (req, res) => {
       .json({ mensaje: "Error al enviar la solicitud de reclamo" });
   }
 };
+
 const submitClaim = async () => {
   try {
     const res = await fetch(`${API_URL}/${id}/reclamar`, {

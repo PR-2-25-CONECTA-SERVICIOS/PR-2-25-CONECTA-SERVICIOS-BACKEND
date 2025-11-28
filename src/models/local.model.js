@@ -43,17 +43,19 @@ const localSchema = new mongoose.Schema(
     servicios: { type: [String], default: [] },
     tagsEspeciales: { type: [String], default: [] },
 
-    reclamos: [
-      {
-        nombrePropietario: String,
-        correo: String,
-        telefono: String,
-        mensaje: String,
-        documentos: [String],
-        estado: { type: String, default: "pendiente" },
-        fecha: { type: Date, default: Date.now },
-      },
-    ],
+reclamos: [
+  {
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // 👈 NUEVO
+    nombrePropietario: String,
+    correo: String,
+    telefono: String,
+    mensaje: String,
+    documentos: [String],
+    estado: { type: String, default: "pendiente" },
+    fecha: { type: Date, default: Date.now },
+  },
+],
+
   },
   { timestamps: true }
 );

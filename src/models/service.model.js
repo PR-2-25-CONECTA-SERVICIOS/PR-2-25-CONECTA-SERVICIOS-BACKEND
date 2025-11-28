@@ -22,17 +22,11 @@ const serviceSchema = new mongoose.Schema({
   especialidades: [String],
   horas: String,
 
-  propietarioId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },  // ⭐ AQUI
-
-  propietario: {
-    nombre: String,
-    foto: String,
-    experiencia: String,
-    verificado: Boolean,
-  },
+  propietarioId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },  // ✔ SOLO ESTE
 
   reseñas: [reviewSchema],
 });
+
 
 
 export default mongoose.model("Service", serviceSchema);

@@ -49,20 +49,28 @@ export const getServiceById = async (req, res) => {
     const { id } = req.params;
 
     const servicio = await Service.findById(id)
-      .populate("reseñas.usuario", "nombre avatar correo"); 
-      // 👉 Solo populamos lo necesario
+      .populate("reseñas.usuario", "nombre avatar correo")
+      .populate("propietarioId", "nombre telefono correo avatar verificado experiencia");
 
     if (!servicio) {
       return res.status(404).json({ mensaje: "Servicio no encontrado" });
     }
 
-    res.json(servicio);
+    // Convertir a objeto plano y eliminar propietario viejo
+    const data = servicio.toObject();
+    delete data.propietario;  // 🔥 BORRAMOS EL OBJETO VIEJO SIN TELEFONO
+
+    res.json({
+      ...data,
+      propietario: servicio.propietarioId,  // 🔥 EL CORRECTO
+    });
 
   } catch (error) {
     console.error("❌ Error en getServiceById:", error);
     res.status(500).json({ mensaje: "Error al obtener el servicio" });
   }
 };
+
 
 // ============================================================
 // 📋 Obtener solicitudes de un servicio
