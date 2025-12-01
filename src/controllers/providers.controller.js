@@ -16,9 +16,6 @@ export const getAllProviders = async (req, res) => {
   }
 };
 
-/* ============================================================
-   ➕ Crear un nuevo proveedor
-============================================================ */
 export const createProvider = async (req, res) => {
   try {
     console.log("📦 Datos recibidos:", req.body);
