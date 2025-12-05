@@ -50,17 +50,7 @@ reclamos: [
     correo: String,
     telefono: String,
     mensaje: String,
-    documentos: [
-  {
-    url: String,
-    public_id: String,
-    original_name: String,
-    format: String,
-    size: Number,
-    fecha: { type: Date, default: Date.now }
-  }
-],
-
+    documentos: [String],
     estado: { type: String, default: "pendiente" },
     fecha: { type: Date, default: Date.now },
   },
