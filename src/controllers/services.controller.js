@@ -76,21 +76,20 @@ export const getServiceById = async (req, res) => {
 // 📋 Obtener solicitudes de un servicio
 // GET /api/servicios/:id/solicitudes
 // ============================================================
+// 📌 Añadir populate con telefono y foto
 export const getServiceRequests = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const solicitudes = await Request.find({ servicio: id })
-      .populate("cliente", "nombre correo telefono")
-      .sort({ createdAt: -1 });
+    const requests = await Request.find({ servicio: id })
+      .populate("cliente", "nombre telefono avatar")  // 🔥 AQUI TELEFONO
+      .populate("servicio", "nombre categoria precio");
 
-    res.json(solicitudes);
-  } catch (error) {
-    console.error("❌ Error en getServiceRequests:", error);
-    res.status(500).json({ mensaje: "Error al obtener solicitudes" });
+    res.json(requests);
+  } catch (err) {
+    res.status(500).json({ mensaje: "Error obteniendo solicitudes" });
   }
 };
-
 
 // Crear servicio
 export const createService = async (req, res) => {
