@@ -36,8 +36,7 @@ export const getAllClaims = async (req, res) => {
 
           estado: rec.estado,
           fecha: rec.fecha,
-          userId: rec.userId // si no existe, pásalo como rec.userId o el campo que corresponda
-
+          userId: rec.userId, // si no existe, pásalo como rec.userId o el campo que corresponda
         });
       });
     });
@@ -51,7 +50,7 @@ export const getAllClaims = async (req, res) => {
 export const updateClaimStatus = async (req, res) => {
   try {
     const { localId, claimId } = req.params;
-    const { estado, verificado, userId } = req.body;  
+    const { estado, verificado, userId } = req.body;
     // 👆 userId = ID del nuevo dueño (el que reclama)
 
     const local = await Local.findById(localId);
@@ -72,13 +71,13 @@ export const updateClaimStatus = async (req, res) => {
       // 1️⃣ Quitar local del dueño original
       if (oldOwnerId) {
         await User.findByIdAndUpdate(oldOwnerId, {
-          $pull: { locales: localId }
+          $pull: { locales: localId },
         });
       }
 
       // 2️⃣ Agregar local al nuevo dueño
       await User.findByIdAndUpdate(newOwnerId, {
-        $addToSet: { locales: localId }
+        $addToSet: { locales: localId },
       });
 
       // 3️⃣ Cambiar el dueño en el local
@@ -97,7 +96,6 @@ export const updateClaimStatus = async (req, res) => {
       reclamo,
       local,
     });
-
   } catch (err) {
     console.log("❌ Error en updateClaimStatus:", err);
     res.status(500).json({ mensaje: "Error al actualizar reclamo" });
@@ -126,10 +124,11 @@ export const completarLocal = async (req, res) => {
       mensaje: "Local completado exitosamente",
       local,
     });
-
   } catch (error) {
     console.error("❌ Error en completarLocal:", error);
-    res.status(500).json({ mensaje: "Error al completar el registro del local" });
+    res
+      .status(500)
+      .json({ mensaje: "Error al completar el registro del local" });
   }
 };
 
@@ -197,37 +196,46 @@ export const claimLocal = async (req, res) => {
   try {
     const { id } = req.params;
     const {
-      userId,               // 👈 VIENE DEL FRONT
+      userId,
       nombrePropietario,
       correo,
       telefono,
       mensaje,
-      documentos,
+      documentos = [], // 👈 Garantiza array
     } = req.body;
 
+    if (!Array.isArray(documentos)) {
+      return res.status(400).json({ mensaje: "documentos debe ser un array" });
+    }
+
     const solicitud = {
-      userId,               // 👈 GUARDAMOS QUIÉN RECLAMA
+      userId,
       nombrePropietario,
       correo,
       telefono,
       mensaje,
-      documentos: documentos || [],
+      documentos, // 👈 Ya soporta múltiples archivos
       estado: "pendiente",
       fecha: new Date(),
     };
 
-    await Local.findByIdAndUpdate(id, { $push: { reclamos: solicitud } });
+    const localActualizado = await Local.findByIdAndUpdate(
+      id,
+      { $push: { reclamos: solicitud } },
+      { new: true, runValidators: true }
+    );
 
-    res.status(201).json({
-      mensaje:
-        "Solicitud de reclamo enviada correctamente. Será revisada por un administrador.",
+    if (!localActualizado)
+      return res.status(404).json({ mensaje: "Local no encontrado" });
+
+    return res.status(201).json({
+      mensaje: "Solicitud enviada correctamente",
       solicitud,
+      local: localActualizado,
     });
   } catch (error) {
-    console.error("❌ Error en claimLocal:", error);
-    res
-      .status(500)
-      .json({ mensaje: "Error al enviar la solicitud de reclamo" });
+    console.log("❌ Error en claimLocal:", error);
+    return res.status(500).json({ mensaje: "Error al enviar reclamo" });
   }
 };
 
